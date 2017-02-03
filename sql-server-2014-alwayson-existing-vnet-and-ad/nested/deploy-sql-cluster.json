@@ -53,7 +53,7 @@
 		},
 		"windowsImageOffer": {
 			"type": "string",
-			"defaultValue": "SQL2014SP1-WS2012R2"
+			"defaultValue": "SQL2016SP1-WS2016"
 		},
 		"windowsImageSKU": {
 			"type": "string",
@@ -62,6 +62,17 @@
 		"windowsImageVersion": {
 			"type": "string",
 			"defaultValue": "latest"
+		},
+		"setupScript": {
+			"type": "string",
+			"defaultValue": "V3JpdGUtSG9zdCAibm90aGluZyI=",
+			"metadata": {
+				"description": "Base64 encoded string of a PowerShell script to run after the VM is provisioned"
+			}
+		},
+		"timeZone": {
+			"type": "string",
+			"defaultValue": "GMT Standard Time"
 		}
 	},
 	"variables": {
@@ -231,7 +242,7 @@
 			}
 		},
 		{
-			"apiVersion": "2015-06-15",
+			"apiVersion": "2016-03-30",
 			"type": "Microsoft.Compute/virtualMachines",
 			"name": "[concat(variables('sqlNamePrefix'), copyindex())]",
 			"location": "[resourceGroup().location]",
@@ -254,7 +265,25 @@
 				"osProfile": {
 					"computerName": "[concat(variables('sqlNamePrefix'), copyindex())]",
 					"adminUsername": "[parameters('adminUsername')]",
-					"adminPassword": "[parameters('adminPassword')]"
+					"adminPassword": "[parameters('adminPassword')]",
+					"customData": "[parameters('setupScript')]",
+					"windowsConfiguration": {
+						"additionalUnattendContent": [
+							{
+								"passName": "oobeSystem",
+								"componentName": "Microsoft-Windows-Shell-Setup",
+								"settingName": "FirstLogonCommands",
+								"content": "<FirstLogonCommands><SynchronousCommand><CommandLine>cmd /c \"copy C:\\AzureData\\CustomData.bin C:\\Config.ps1\"</CommandLine><Description>copy</Description><Order>1</Order></SynchronousCommand><SynchronousCommand><CommandLine>%windir%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -ExecutionPolicy Bypass -file C:\\Config.ps1</CommandLine><Description>script</Description><Order>2</Order></SynchronousCommand></FirstLogonCommands>"
+							},
+							{
+								"passName": "oobeSystem",
+								"componentName": "Microsoft-Windows-Shell-Setup",
+								"settingName": "AutoLogon",
+								"content": "[concat('<AutoLogon><Password><Value>', parameters('adminPassword'), '</Value></Password><Enabled>true</Enabled><LogonCount>1</LogonCount><Username>', parameters('adminUserName'), '</Username></AutoLogon>')]"
+							}
+						],
+						"timeZone": "[parameters('timeZone')]"
+					}
 				},
 				"storageProfile": {
 					"imageReference": {
@@ -304,7 +333,7 @@
 			}
 		},
 		{
-			"apiVersion": "2015-06-15",
+			"apiVersion": "2016-03-30",
 			"type": "Microsoft.Compute/virtualMachines",
 			"name": "[variables('sqlWitnessVMName')]",
 			"location": "[resourceGroup().location]",
@@ -323,7 +352,25 @@
 				"osProfile": {
 					"computerName": "[variables('sqlWitnessVMName')]",
 					"adminUsername": "[parameters('adminUsername')]",
-					"adminPassword": "[parameters('adminPassword')]"
+					"adminPassword": "[parameters('adminPassword')]",
+					"customData": "[parameters('setupScript')]",
+					"windowsConfiguration": {
+						"additionalUnattendContent": [
+							{
+								"passName": "oobeSystem",
+								"componentName": "Microsoft-Windows-Shell-Setup",
+								"settingName": "FirstLogonCommands",
+								"content": "<FirstLogonCommands><SynchronousCommand><CommandLine>cmd /c \"copy C:\\AzureData\\CustomData.bin C:\\Config.ps1\"</CommandLine><Description>copy</Description><Order>1</Order></SynchronousCommand><SynchronousCommand><CommandLine>%windir%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -ExecutionPolicy Bypass -file C:\\Config.ps1</CommandLine><Description>script</Description><Order>2</Order></SynchronousCommand></FirstLogonCommands>"
+							},
+							{
+								"passName": "oobeSystem",
+								"componentName": "Microsoft-Windows-Shell-Setup",
+								"settingName": "AutoLogon",
+								"content": "[concat('<AutoLogon><Password><Value>', parameters('adminPassword'), '</Value></Password><Enabled>true</Enabled><LogonCount>1</LogonCount><Username>', parameters('adminUserName'), '</Username></AutoLogon>')]"
+							}
+						],
+						"timeZone": "[parameters('timeZone')]"
+					}
 				},
 				"storageProfile": {
 					"imageReference": {

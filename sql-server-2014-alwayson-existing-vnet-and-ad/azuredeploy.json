@@ -107,6 +107,12 @@
         "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
       },
       "defaultValue": ""
+    },
+    "setupScript": {
+      "type": "string",
+      "metadata": {
+				"description": "Base64 encoded string of a PowerShell script to run after the VM is provisioned"
+			}
     }
   },
   "variables": {
@@ -171,6 +177,9 @@
           },
           "_artifactsLocationSasToken": {
             "value": "[parameters('_artifactsLocationSasToken')]"
+          },
+          "setupScript": {
+            "value": "[parameters('setupScript')]"
           }
         }
       }
